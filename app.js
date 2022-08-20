@@ -23,9 +23,11 @@ const SocketIO = require("socket.io");
 const PORT = process.env.PORT || 3000;
 const INDEX = '/index.html';
 const server = express()
+//   .static(path.resolve(__dirname, 'frontend', 'static'),
+//     {extensions: ["js"]})
   .use(Cors)
   .use((req, res) => res.sendFile(INDEX, { root:`${ __dirname}/dist/docs` }))
-  .listen(PORT, () => console.log(`Listening on ${PORT}`));
+  .listen(PORT, () => console.log(`Listening on ${PORT}`, __dirname));
 
 const Socketio = SocketIO(server, {
     cors: {

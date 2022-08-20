@@ -21,12 +21,12 @@ const SocketIO = require("socket.io");
 // const app = Express;
 
 const PORT = process.env.PORT || 3000;
-const INDEX = '/index.html';
+const INDEX = 'index.html';
 const server = express()
 //   .static(path.resolve(__dirname, 'frontend', 'static'),
 //     {extensions: ["js"]})
   .use(Cors)
-  .use((req, res) => res.sendFile(INDEX, { root:`/dist/docs` }))
+  .use((req, res) => res.sendFile(INDEX, { root:`/` }))
   .listen(PORT, () => console.log(`Listening on ${PORT}`, __dirname));
 
 const Socketio = SocketIO(server, {

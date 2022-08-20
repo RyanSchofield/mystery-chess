@@ -1,0 +1,68 @@
+
+
+
+<div class="game-container">
+
+
+
+<div class="gameboard" cdkDropListGroup [ngClass]="this.playerColor == 1 ? 'white-view' : 'black-view'">
+<div class="gameboard-row" *ngFor="let row of tiles; let i = index" (cdkDropListDropped)="drop($any($event))" [ngClass]="this.playerColor == 1 ? 'white-view' : 'black-view'">
+  <div 
+     class="gameboard-tile" 
+    *ngFor="let tile of row; let j = index" 
+    [style.background-color]="this.threatTiles[i][j] ? (this.highlightedTiles[i][j] ? 'DeepPink': 'HotPink') : (this.highlightedTiles[i][j] ? tile.highlightedColor : tile.color)"
+     cdkDropList (cdkDropListDropped)="drop($any($event))" [cdkDropListData]="{x: i, y:j}"
+  >
+  <div class="piece"
+	  *ngIf="tile.piece"
+	  cdkDrag [cdkDragData]="{x: i, y: j, piece: tile.piece}"
+	  [cdkDragDisabled]="(tile.piece.alliance != currentTurn) || (playerColor != currentTurn) || isSpectator"
+	  (cdkDragStarted)="drag($any($event))" 
+    [class.mysterious]="tile.piece.isMysterious"
+	  >
+      <img [src]="tile.piece.image" height="100%">
+    </div>
+  </div>
+</div>
+</div>
+
+  <div class="sideboard" [ngClass]="this.playerColor == 1 ? 'white-view' : 'black-view'">
+    <div class="black-graveyard">
+      <div class="captured-piece" *ngFor="let piece of blackGraveyard; let i = index">
+        <div class="piece-image" 
+          [style.background-color]="piece.isMysterious ? 'gray' : 'none'" 
+          [style.border-radius]="'75%'"
+          (click)="piece.isRevealed = (!piece.isRevealed || !piece.isMysterious) && this.playerColor !== piece.alliance"
+        >
+          <img [src]="piece.image"
+            [class.hidden]="!piece.isRevealed && piece.isMysterious"
+            
+          >
+        </div>
+      </div>
+    </div>
+
+    <div class="game-info">
+      <p *ngIf="!isSpectator">Your color: {{ playerColor ? 'White' : 'Black'}}</p>
+      <p>Current turn: {{ currentTurn ? 'White' : 'Black' }}</p>
+      <button type="button" (click)="refresh()">Restart game</button>
+      <p *ngIf="message">{{message}}</p>
+      <app-chat [username]="this.isSpectator ? ('Spectator ' + spectatorNumber) : (this.playerColor == 1 ? 'Player 1' : 'Player 2')" [socket]="socket"></app-chat>
+    </div>
+
+    <div class="white-graveyard">
+      <div class="captured-piece" *ngFor="let piece of whiteGraveyard; let i = index">
+       <div class="piece-image" 
+        [style.background-color]="piece.isMysterious ? 'gray' : 'none'" 
+        [style.border-radius]="'75%'"
+        (click)="piece.isRevealed = (!piece.isRevealed || !piece.isMysterious) && this.playerColor !== piece.alliance"
+       >
+        <img [src]="piece.image"
+          [class.hidden]="!piece.isRevealed && piece.isMysterious"
+        >
+       </div>
+      </div>
+  </div>
+</div>
+
+</div>

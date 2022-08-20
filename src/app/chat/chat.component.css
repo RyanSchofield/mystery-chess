@@ -1,0 +1,48 @@
+.chat-container {
+    width: 200px;
+}
+
+.message-form {
+    margin: 1px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.messages {
+    height: 300px;
+    overflow-y: scroll;
+    background-color: linen;
+    border-radius: 2%;
+    word-break: break-all;
+    text-align: left;
+}
+
+.sender-name {
+    color: #A0615F;
+}
+
+.message {
+    margin: 3px;
+    padding: 3px;
+}
+
+.chat-container {
+    margin: 21px;
+    padding: 2px;
+}
+
+input {
+    height: 40px;
+}
+
+button {
+    height: 45px;
+    background-color: whitesmoke;
+    border-radius: 5px;
+	box-shadow: 1px 1px 3px 0 #999;
+}
+
+button:hover {
+    opacity: 0.80;
+}

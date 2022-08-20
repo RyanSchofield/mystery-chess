@@ -24,7 +24,7 @@ const PORT = process.env.PORT || 3000;
 const INDEX = '/index.html';
 const server = express()
   .use(Cors)
-  .use((req, res) => res.sendFile(INDEX, { root: __dirname }))
+  .use((req, res) => res.sendFile(INDEX, { root:`${ __dirname}/dist/docs` }))
   .listen(PORT, () => console.log(`Listening on ${PORT}`));
 
 const Socketio = SocketIO(server, {

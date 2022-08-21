@@ -26,6 +26,7 @@ const server = express()
 //   .static(path.resolve(__dirname, 'frontend', 'static'),
 //     {extensions: ["js"]})
   .use(Cors)
+//   test
   .use(express.static(__dirname + '/dist/docs/'))
 //   .use((req, res) => {console.log(req); res.sendFile(INDEX, { root:`${ __dirname}/dist/docs` });})
   .listen(PORT, () => console.log(`Listening on ${PORT}`, __dirname));

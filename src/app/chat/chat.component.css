@@ -14,7 +14,7 @@
     overflow-y: scroll;
     background-color: linen;
     border-radius: 2%;
-    word-break: break-all;
+    word-break: normal;
     text-align: left;
 }
 

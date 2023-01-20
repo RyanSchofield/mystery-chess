@@ -68,7 +68,7 @@ export class GameboardComponent implements OnInit {
 				this.highlightedTiles[0][1] = true;
 			}
 			if (this._canQueensideCastle(Alliance.WHITE)) {
-				console.log('king side')
+				console.log('queen side')
 				this.highlightedTiles[0][5] = true;
 			}
 		} else if (event.source.data.piece 
@@ -108,7 +108,7 @@ export class GameboardComponent implements OnInit {
 				this.tiles[0][0].piece = null;
 				castled = true;
 			} else if (event.item.data.piece.alliance == Alliance.WHITE 
-				&& this._canKingsideCastle(Alliance.WHITE)
+				&& this._canQueensideCastle(Alliance.WHITE)
 				&& target.x == 0
 				&& target.y == 5
 			) {
@@ -118,7 +118,7 @@ export class GameboardComponent implements OnInit {
 				this.tiles[0][7].piece = null;
 				castled = true;
 			} else if (event.item.data.piece.alliance == Alliance.WHITE 
-				&& this._canQueensideCastle(Alliance.WHITE)
+				&& this._canKingsideCastle(Alliance.WHITE)
 				&& target.x == 7
 				&& target.y == 0
 			) {
@@ -127,8 +127,8 @@ export class GameboardComponent implements OnInit {
 				this.tiles[7][2].piece = this._blackReserve?.pop();
 				this.tiles[7][0].piece = null;
 				castled = true;
-			} else if (event.item.data.piece.alliance == Alliance.WHITE 
-				&& this._canQueensideCastle(Alliance.WHITE)
+			} else if (event.item.data.piece.alliance == Alliance.BLACK 
+				&& this._canQueensideCastle(Alliance.BLACK)
 				&& target.x == 7
 				&& target.y == 5
 			) {
@@ -642,9 +642,9 @@ export class GameboardComponent implements OnInit {
 				&& !this.tiles[7][4].piece
 				&& !this.tiles[7][5].piece
 				&& !this.tiles[7][6].piece
-				&& !this._isTileThreatened(this.tiles[7][4], Alliance.WHITE)
-				&& !this._isTileThreatened(this.tiles[7][5], Alliance.WHITE) 
-				&& !this._isTileThreatened(this.tiles[7][6], Alliance.WHITE) 
+				&& !this._isTileThreatened(this.tiles[7][4], Alliance.BLACK)
+				&& !this._isTileThreatened(this.tiles[7][5], Alliance.BLACK) 
+				&& !this._isTileThreatened(this.tiles[7][6], Alliance.BLACK) 
 			) {
 				return true;
 			} else {

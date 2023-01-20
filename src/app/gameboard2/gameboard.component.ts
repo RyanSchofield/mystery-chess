@@ -9,6 +9,7 @@ import { Rook } from './pieces/rook/rook.component';
 import { Knight } from './pieces/knight/knight.component';
 import { Queen } from './pieces/queen/queen.component';
 import { Pawn } from './pieces/pawn/pawn.component';
+import { taggedTemplate } from '@angular/compiler/src/output/output_ast';
 
 
 @Component({
@@ -34,6 +35,11 @@ export class GameboardComponent implements OnInit {
 	private _whiteReserve?: any[];
 	private _blackReserve?: any[];
 
+	// private _audio = new Audio();
+
+	private _hasWhiteKingMoved: boolean = false;
+	private _hasBlackKingMoved: boolean = false;
+
 	constructor() { 
 		this.currentTurn = Alliance.WHITE; 
 		this.highlightedTiles = this._noHighlightedTiles(); 
@@ -51,6 +57,34 @@ export class GameboardComponent implements OnInit {
 
 	drag(event: any) {
 		this.highlightedTiles = event.source.data.piece.getValidMoveTiles({x: event.source.data.x, y: event.source.data.y}, this.tiles);
+		// add to highlighted tiles here if can castle
+		if (event.source.data.piece 
+			&& event.source.data.piece.typeDisplay === 'king' 
+			&& event.source.data.piece.alliance === Alliance.WHITE
+		) {
+			console.log('white king picked up');
+			if (this._canKingsideCastle(Alliance.WHITE)) {
+				console.log('kingside')
+				this.highlightedTiles[0][1] = true;
+			}
+			if (this._canQueensideCastle(Alliance.WHITE)) {
+				console.log('king side')
+				this.highlightedTiles[0][5] = true;
+			}
+		} else if (event.source.data.piece 
+			&& event.source.data.piece.typeDisplay === 'king' 
+			&& event.source.data.piece.alliance === Alliance.BLACK
+		) {
+			console.log('black king')
+			if (this._canKingsideCastle(Alliance.BLACK)) {
+				console.log('king side')
+				this.highlightedTiles[7][1] = true;
+			}
+			if (this._canQueensideCastle(Alliance.BLACK)) {
+				console.log('queen side')
+				this.highlightedTiles[7][5] = true;
+			}
+		}
 	}
 
 	drop(event: CdkDragDrop<any>) {
@@ -58,6 +92,70 @@ export class GameboardComponent implements OnInit {
 
 		let target = {x: event.container.data.x, y: event.container.data.y};
 		let origin = {x: event.item.data.x, y: event.item.data.y};
+
+		// castling logic goes here
+		if (event.item.data.piece.typeDisplay == 'king') {
+			console.log('picked up king');
+			let castled = false;
+			if (event.item.data.piece.alliance == Alliance.WHITE 
+				&& this._canKingsideCastle(Alliance.WHITE)
+				&& target.x == 0
+				&& target.y == 1
+			) {
+				this.tiles[0][1].piece = event.item.data.piece;
+				this.tiles[origin.x][origin.y].piece = null;
+				this.tiles[0][2].piece = this._whiteReserve?.pop();
+				this.tiles[0][0].piece = null;
+				castled = true;
+			} else if (event.item.data.piece.alliance == Alliance.WHITE 
+				&& this._canKingsideCastle(Alliance.WHITE)
+				&& target.x == 0
+				&& target.y == 5
+			) {
+				this.tiles[0][5].piece = event.item.data.piece;
+				this.tiles[origin.x][origin.y].piece = null;
+				this.tiles[0][4].piece = this._whiteReserve?.pop();
+				this.tiles[0][7].piece = null;
+				castled = true;
+			} else if (event.item.data.piece.alliance == Alliance.WHITE 
+				&& this._canQueensideCastle(Alliance.WHITE)
+				&& target.x == 7
+				&& target.y == 0
+			) {
+				this.tiles[7][1].piece = event.item.data.piece;
+				this.tiles[origin.x][origin.y].piece = null;
+				this.tiles[7][2].piece = this._blackReserve?.pop();
+				this.tiles[7][0].piece = null;
+				castled = true;
+			} else if (event.item.data.piece.alliance == Alliance.WHITE 
+				&& this._canQueensideCastle(Alliance.WHITE)
+				&& target.x == 7
+				&& target.y == 5
+			) {
+				this.tiles[7][5].piece = event.item.data.piece;
+				this.tiles[origin.x][origin.y].piece = null;
+				this.tiles[7][4].piece = this._blackReserve?.pop();
+				this.tiles[7][7].piece = null;
+				castled = true;
+			}
+
+			if (castled) {
+				this.currentTurn = this.currentTurn === Alliance.WHITE ? Alliance.BLACK : Alliance.WHITE;
+
+				this.socket.emit("move",  {
+					tiles: this.tiles,
+					currentTurn: this.currentTurn,
+					whiteReserve: this._whiteReserve,
+					blackReserve: this._blackReserve,
+					whiteGraveyard: this.whiteGraveyard,
+					blackGraveyard: this.blackGraveyard
+				});
+
+				this.highlightedTiles = this._unhighlightedTiles;
+				return;
+			}
+		}
+		
 
 		if (!this._sameCoordinates(origin, target) && event.item.data.piece.validateMove(origin, target, this.tiles)) {
 			let originalTiles = JSON.parse(JSON.stringify(this.tiles));
@@ -147,6 +245,7 @@ export class GameboardComponent implements OnInit {
 				whiteGraveyard: this.whiteGraveyard,
 				blackGraveyard: this.blackGraveyard
 			});
+			// this._audio.play();
 		}
 
 		this.highlightedTiles = this._unhighlightedTiles;
@@ -163,6 +262,10 @@ export class GameboardComponent implements OnInit {
 		this._initializeReserves();
 		this._initializeGraveyards();
 		this._inititalizeTiles();
+		// let audio = new Audio();
+		// this._audio.src = "../../../assets/audio/move.mp3";
+  		// this._audio.load();
+  		// audio.play();
 	}
 
 	private _initializeSocket() {
@@ -274,6 +377,11 @@ export class GameboardComponent implements OnInit {
 	  	for (let reservePiece of data.blackReserve) {
 			this._blackReserve.push(this._objectToPiece(reservePiece));
 	  	}
+		// let audio = new Audio();
+		// audio.src = "../../../assets/audio/move.mp3";
+		// audio.load();
+		// audio.play();
+		// this._audio.play();
   	}
 
 	private _tileHasEnemy(tile: any, boardTiles: any[][], movedPieceAlliance: boolean) : boolean {
@@ -327,8 +435,8 @@ export class GameboardComponent implements OnInit {
 		this.tiles[1][5].piece = new Pawn(Alliance.WHITE);
 		this.tiles[1][6].piece = new Pawn(Alliance.WHITE);
 		this.tiles[1][7].piece = new Pawn(Alliance.WHITE);
-		this.tiles[7][0].piece = new Rook(Alliance.BLACK);
 
+		this.tiles[7][0].piece = new Rook(Alliance.BLACK);
 		this.tiles[7][1].piece = new Knight(Alliance.BLACK);
 		this.tiles[7][2].piece = new Bishop(Alliance.BLACK);
 		this.tiles[7][3].piece = new King(Alliance.BLACK);
@@ -474,6 +582,97 @@ export class GameboardComponent implements OnInit {
 		}
 		return null;
 	}
+
+	private _canKingsideCastle(alliance: Alliance) {
+		if (this.isCheck()) return false;
+
+		if (alliance === Alliance.WHITE) {
+			// how to see if spaces are in check????
+			if (
+				!this._hasWhiteKingMoved 
+				&& this.tiles[0][0].piece.isMysterious
+				&& !this.tiles[0][1].piece
+				&& !this.tiles[0][2].piece
+				&& !this._isTileThreatened(this.tiles[0][1], Alliance.WHITE)
+				&& !this._isTileThreatened(this.tiles[0][2], Alliance.WHITE) 
+			) {
+				return true;
+			} else {
+				return false;
+			}
+		} else {
+			if (
+				!this._hasBlackKingMoved 
+				&& this.tiles[7][0].piece.isMysterious
+				&& !this.tiles[7][1].piece
+				&& !this.tiles[7][2].piece
+				&& !this._isTileThreatened(this.tiles[7][1], Alliance.BLACK)
+				&& !this._isTileThreatened(this.tiles[7][2], Alliance.BLACK) 
+			) {
+				return true;
+			} else {
+				return false;
+			}
+		}
+	}
+
+	private _canQueensideCastle(alliance: Alliance) {
+		if (this.isCheck()) return false;
+
+		if (alliance === Alliance.WHITE) {
+			// how to see if spaces are in check????
+			if (
+				!this._hasWhiteKingMoved 
+				&& this.tiles[0][7].piece.isMysterious
+				&& !this.tiles[0][4].piece
+				&& !this.tiles[0][5].piece
+				&& !this.tiles[0][6].piece
+				&& !this._isTileThreatened(this.tiles[0][4], Alliance.WHITE)
+				&& !this._isTileThreatened(this.tiles[0][5], Alliance.WHITE) 
+				&& !this._isTileThreatened(this.tiles[0][6], Alliance.WHITE)
+			) {
+				return true;
+			} else {
+				return false;
+			}
+		} else {
+			if (
+				!this._hasBlackKingMoved 
+				&& this.tiles[7][7].piece.isMysterious
+				&& !this.tiles[7][4].piece
+				&& !this.tiles[7][5].piece
+				&& !this.tiles[7][6].piece
+				&& !this._isTileThreatened(this.tiles[7][4], Alliance.WHITE)
+				&& !this._isTileThreatened(this.tiles[7][5], Alliance.WHITE) 
+				&& !this._isTileThreatened(this.tiles[7][6], Alliance.WHITE) 
+			) {
+				return true;
+			} else {
+				return false;
+			}
+		}
+	}
+
+	private _isTileThreatened(tile: any, alliance: Alliance) {
+		// iterate through tiles to find the king position
+		// iterate through tiles again to find all pieces attacking the king position.
+		// if (!alliance) {console.log('wtf???');return this._noHighlightedTiles();
+
+		for (let i = 0; i < this.tiles.length; i++) {
+			for (let j = 0; j < this.tiles[i].length; j++) {
+				// if (tiles[i][j].piece) console.log('piece at ', i, j);
+				if (this.tiles[i][j].piece 
+					&& this.tiles[i][j].piece.alliance !== alliance 
+					&& this.tiles[i][j].piece.getValidMoveTiles({x : i, y: j}, this.tiles)[tile.x][tile.y]) 
+				{
+					console.log('threat at', i, j);
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
 }
 
 /**
@@ -481,15 +680,13 @@ export class GameboardComponent implements OnInit {
  * enhancement:
  * when opening the page, display a question asking if they want to play local or online.
  *
- * enhancement:
- * implement a refresh somehow (button, route?), that calls a method on gameboard, sending a moveUpdate with initial condition tiles.
  */
 
 /**
  * Undo Button:
  * have an array of game state objects on the server. pop from the array when undo event is received.
  * 
- * Possibly do this on server:
+ * Do this on server:
  * Implement moveHistory, an array of move objects, that have player, tiles, white/black reserve/graveyard properties.
  * push to moveHistory on successful move (whatever the origin state was).
  * Implement undo button that goes back one move.
@@ -505,7 +702,7 @@ export class GameboardComponent implements OnInit {
  * When clicked, it reinitializes tiles.
  * Send moveUpdate to the server
  *
- * Bonus enhancement: Prompt the other player when the button is pressed. If other player says yes, reinitialize. If no,
+ * Enhancement: Prompt the other player when the button is pressed. If other player says yes, reinitialize. If no,
  * alert the player that clicked the button.
  */
 

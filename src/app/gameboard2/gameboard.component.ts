@@ -45,8 +45,8 @@ export class GameboardComponent implements OnInit {
 		this.highlightedTiles = this._noHighlightedTiles(); 
 		this.threatTiles = this._noHighlightedTiles();
 		this._unhighlightedTiles = this._noHighlightedTiles();
-		this.socket= io("http://192.168.1.13:3000");
-		// this.socket = io();
+		//this.socket= io("http://192.168.1.13:3000");
+		this.socket = io();
 	}
 
 	ngOnInit(): void {

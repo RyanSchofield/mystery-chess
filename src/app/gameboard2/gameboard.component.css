@@ -148,6 +148,10 @@ img {
     flex-direction: column;
   }
 
+  .play-area {
+    width: 100%;
+  }
+
   .gameboard {
     border: 2px solid black;
     height: 300px;
@@ -175,6 +179,11 @@ img {
     width: 100%;
     height: 50px;
   }
+
+  .captured-piece {
+    width: 25px;
+    height: 25px;
+  }
   
   .black-graveyard {
     display: flex;
@@ -183,8 +192,19 @@ img {
     height: 50px;
   }
   
+  .piece-image {
+    width: 25px;
+    height: 25px;
+  }
+
+  img {
+    width: 100%;
+    height: 100%;
+
+  }
+
   .captured-piece {
-    width: 10%;
+    width: 25px;
     height: 25px;
   }
     
